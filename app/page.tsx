@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function Page() {
   return (
@@ -7,10 +8,18 @@ export default function Page() {
         <div>
           <h1 className="font-medium">Project ready!</h1>
           <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+          <p>We&apos;ve added the specific views according to your designs.</p>
+          
+          <div className="mt-4 flex flex-col gap-2">
+            <Button asChild variant="outline">
+              <Link href="/mobile-interface">Mobile Engineering Interface</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/cortex-sync">Cortex // Sync Widget</Link>
+            </Button>
+          </div>
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
+        <div className="font-mono text-xs text-muted-foreground mt-4">
           (Press <kbd>d</kbd> to toggle dark mode)
         </div>
       </div>
