@@ -9,23 +9,34 @@ export default function Withdraw() {
 
   const maxAmount = portfolio?.amountUsdc || 0
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = () => {
     if (!amount || isNaN(Number(amount))) return
-    const id = toast.loading('Confirm withdrawal in wallet…')
-    try {
-      const sig = await withdraw(Number(amount))
-      toast.dismiss(id)
-      const short = sig.length > 16 ? `${sig.slice(0, 6)}…${sig.slice(-6)}` : sig
-      toast.success('Withdrawal confirmed', {
-        description: short,
-      })
-      setAmount('')
-    } catch (err: unknown) {
-      toast.dismiss(id)
-      const msg = err instanceof Error ? err.message : 'Transaction failed'
-      toast.error('Withdrawal failed', { description: msg })
-      console.error(err)
-    }
+    const amt = Number(amount)
+    toast.promise(
+      withdraw(amt).then((sig) => {
+        setAmount('')
+        return sig
+      }),
+      {
+        loading: 'Confirm withdrawal in wallet…',
+        success: (sig) => {
+          const short =
+            sig.length > 16 ? `${sig.slice(0, 6)}…${sig.slice(-6)}` : sig
+          return {
+            message: 'Withdrawal confirmed',
+            description: `${amt.toFixed(2)} USDC · ${short}`,
+          }
+        },
+        error: (err) => {
+          console.error(err)
+          return {
+            message: 'Withdrawal failed',
+            description:
+              err instanceof Error ? err.message : 'Transaction failed',
+          }
+        },
+      }
+    )
   }
 
   return (

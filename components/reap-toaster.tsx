@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 export function ReapToaster() {
   return (
     <Toaster
+      className="!z-[99999]"
       position="bottom-center"
       theme="dark"
       offset={20}
