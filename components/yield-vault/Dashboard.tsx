@@ -31,13 +31,12 @@ export default function Dashboard() {
 
   const walletFree = walletUsdc ?? 0
 
-  const holdingRows: { label: string; value: number; pct: string; color: string }[] = []
+  const rawRows: { label: string; value: number; color: string }[] = []
 
   if (walletUsdc !== null) {
-    holdingRows.push({
+    rawRows.push({
       label: 'USDC (wallet)',
       value: walletFree,
-      pct: '—',
       color: '#94a3b8',
     })
   }
@@ -56,15 +55,23 @@ export default function Dashboard() {
           ? mockStrategyVaults[s.id]
           : vaultTotal
       for (const alloc of s.allocations) {
-        holdingRows.push({
+        rawRows.push({
           label: alloc.label,
           value: slice * (alloc.pct / 100),
-          pct: `${alloc.pct}%`,
           color: alloc.color,
         })
       }
     }
   }
+
+  const navTotal = rawRows.reduce((sum, r) => sum + r.value, 0)
+  const holdingRows = rawRows.map((r) => ({
+    ...r,
+    pct:
+      navTotal > EPS
+        ? `${((r.value / navTotal) * 100).toFixed(1)}%`
+        : '—',
+  }))
 
   return (
     <>
