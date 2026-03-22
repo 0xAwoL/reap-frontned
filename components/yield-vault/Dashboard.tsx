@@ -1,52 +1,135 @@
+'use client'
+import { usePortfolio, STRATEGIES } from '@/hooks/usePortfolio'
+
+const EPS = 1e-9
+
 export default function Dashboard() {
+  const { portfolio, walletUsdc, mockStrategyVaults } = usePortfolio()
+  const hasOpenPosition = !!portfolio && portfolio.amountRaw > 0
+  const vaultTotal = hasOpenPosition && portfolio ? portfolio.amountUsdc : 0
+
+  const activeStrategies = STRATEGIES.filter((s) => mockStrategyVaults[s.id] > EPS)
+
+  let apyWeighted = 0
+  let apyWeightSum = 0
+  for (const s of STRATEGIES) {
+    const slice = mockStrategyVaults[s.id]
+    if (slice > EPS) {
+      apyWeighted += slice * s.apyBps
+      apyWeightSum += slice
+    }
+  }
+  const blendedApyBps = apyWeightSum > EPS ? apyWeighted / apyWeightSum : 0
+  const blendedApy = (blendedApyBps / 100).toFixed(1)
+
+  const strategyHeader =
+    activeStrategies.length === 0
+      ? '—'
+      : activeStrategies.length === 1
+        ? activeStrategies[0].name
+        : `MULTI · ${activeStrategies.length}`
+
+  const walletFree = walletUsdc ?? 0
+
+  const rawRows: { label: string; value: number; color: string }[] = []
+
+  if (walletUsdc !== null) {
+    rawRows.push({
+      label: 'USDC (wallet)',
+      value: walletFree,
+      color: '#94a3b8',
+    })
+  }
+
+  const strategiesToRender =
+    hasOpenPosition && vaultTotal > EPS
+      ? activeStrategies.length > 0
+        ? activeStrategies
+        : STRATEGIES.filter((s) => s.id === portfolio?.strategy)
+      : []
+
+  if (strategiesToRender.length > 0 && vaultTotal > EPS) {
+    for (const s of strategiesToRender) {
+      const slice =
+        activeStrategies.length > 0
+          ? mockStrategyVaults[s.id]
+          : vaultTotal
+      for (const alloc of s.allocations) {
+        rawRows.push({
+          label: alloc.label,
+          value: slice * (alloc.pct / 100),
+          color: alloc.color,
+        })
+      }
+    }
+  }
+
+  const navTotal = rawRows.reduce((sum, r) => sum + r.value, 0)
+  const holdingRows = rawRows.map((r) => ({
+    ...r,
+    pct:
+      navTotal > EPS
+        ? `${((r.value / navTotal) * 100).toFixed(1)}%`
+        : '—',
+  }))
+
   return (
     <>
       <div className="py-[8px] px-[16px] text-white uppercase border-b border-[#1a1a1a] flex justify-between items-center">
         <span>POSITION_STATUS</span>
-        <span className="text-[#444]">LIVE</span>
+        <span className={hasOpenPosition ? "text-[#4ade80]" : "text-[#444]"}>
+          {hasOpenPosition ? 'LIVE' : 'INACTIVE'}
+        </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 border-b border-[#1a1a1a]">
         <div className="p-[12px_16px] border-b md:border-b-0 md:border-r border-[#1a1a1a] flex flex-col gap-[8px]">
-          <div className="text-[#444] uppercase">TOTAL_VAL</div>
-          <div className="text-white text-[14px]">$1,240.50</div>
+          <div className="text-[#444] uppercase">VAULT_USDC</div>
+          <div className="text-white text-[14px]">{vaultTotal.toFixed(2)} USDC</div>
         </div>
         <div className="p-[12px_16px] border-b md:border-b-0 md:border-r border-[#1a1a1a] flex flex-col gap-[8px]">
-          <div className="text-[#444] uppercase">YIELD_EARNED</div>
-          <div className="text-[#fff] text-[14px]">+$40.50</div>
+          <div className="text-[#444] uppercase">DEPOSITS</div>
+          <div className="text-[#fff] text-[14px]">{hasOpenPosition ? portfolio?.depositCount ?? 0 : 0}</div>
         </div>
         <div className="p-[12px_16px] flex flex-col gap-[8px]">
           <div className="text-[#444] uppercase">LIVE_APY</div>
-          <div className="text-white text-[14px]">8.2%</div>
+          <div className="text-white text-[14px]">{hasOpenPosition ? `${blendedApy}%` : '0.0%'}</div>
         </div>
       </div>
 
       <div className="py-[8px] px-[16px] text-white uppercase border-b border-[#1a1a1a] flex justify-between items-center mt-[32px] border-t">
-        <span>STRATEGY_ALLOCATION</span>
-        <span className="text-[#444]">BALANCED</span>
+        <span>CURRENT_HOLDINGS</span>
+        <span className="text-[#444] uppercase">{strategyHeader}</span>
       </div>
-      
+
       <div className="grid grid-cols-[1fr_1fr_60px] border-b border-[#1a1a1a] h-[24px] items-center text-center text-[#444] uppercase text-[9px] shrink-0">
         <div className="text-left pl-[16px]">ASSET</div>
         <div className="text-left border-l border-[#1a1a1a] pl-[12px] h-full leading-[24px]">VALUE</div>
         <div className="border-l border-[#1a1a1a] h-full leading-[24px]">ALLOC</div>
       </div>
-      
+
       <div className="flex flex-col grow">
-        <div className="grid grid-cols-[1fr_1fr_60px] h-[24px] items-center border-b border-[#1a1a1a]">
-          <div className="pl-[16px] text-white overflow-hidden text-ellipsis whitespace-nowrap pr-2">Ondo USDY</div>
-          <div className="border-l border-[#1a1a1a] h-full leading-[24px] pl-[12px] text-[#b0b0b0]">~$620.25</div>
-          <div className="text-[#444] text-center border-l border-[#1a1a1a] h-full leading-[24px]">50%</div>
-        </div>
-        <div className="grid grid-cols-[1fr_1fr_60px] h-[24px] items-center border-b border-[#1a1a1a]">
-          <div className="pl-[16px] text-white overflow-hidden text-ellipsis whitespace-nowrap pr-2">Orca XAUT/USDC LP</div>
-          <div className="border-l border-[#1a1a1a] h-full leading-[24px] pl-[12px] text-[#b0b0b0]">~$372.15</div>
-          <div className="text-[#444] text-center border-l border-[#1a1a1a] h-full leading-[24px]">30%</div>
-        </div>
-        <div className="grid grid-cols-[1fr_1fr_60px] h-[24px] items-center border-b border-[#1a1a1a]">
-          <div className="pl-[16px] text-white overflow-hidden text-ellipsis whitespace-nowrap pr-2">Kamino xSPY Lending</div>
-          <div className="border-l border-[#1a1a1a] h-full leading-[24px] pl-[12px] text-[#b0b0b0]">~$248.10</div>
-          <div className="text-[#444] text-center border-l border-[#1a1a1a] h-full leading-[24px]">20%</div>
-        </div>
+        {holdingRows.map((row, i) => (
+          <div
+            key={`${row.label}-${i}`}
+            className="grid grid-cols-[1fr_1fr_60px] h-[24px] items-center border-b border-[#1a1a1a]"
+          >
+            <div
+              className="pl-[16px] overflow-hidden text-ellipsis whitespace-nowrap pr-2"
+              style={{ color: row.color }}
+            >
+              {row.label}
+            </div>
+            <div className="border-l border-[#1a1a1a] h-full leading-[24px] pl-[12px] text-[#b0b0b0]">
+              {row.value.toFixed(2)} USDC
+            </div>
+            <div className="text-[#444] text-center border-l border-[#1a1a1a] h-full leading-[24px]">
+              {row.pct}
+            </div>
+          </div>
+        ))}
+        {holdingRows.length === 0 && (
+          <div className="text-[#444] text-center py-[16px]">NO_ACTIVE_POSITION</div>
+        )}
       </div>
     </>
   )

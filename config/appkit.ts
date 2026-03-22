@@ -1,5 +1,5 @@
 import { SolanaAdapter } from '@reown/appkit-adapter-solana/react'
-import { solana, solanaTestnet, solanaDevnet } from '@reown/appkit/networks'
+import { solanaDevnet } from '@reown/appkit/networks'
 
 export const solanaAdapter = new SolanaAdapter()
 
@@ -9,10 +9,14 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_REOWN_PROJECT_ID is not set in environment variables')
 }
 
-export const networks = [solana, solanaTestnet, solanaDevnet] as [
-  typeof solana,
-  typeof solanaTestnet,
-  typeof solanaDevnet,
+const customDevnet = {
+  ...solanaDevnet,
+  currency: "USDC",
+  explorerUrl: "https://explorer.solana.com/?cluster=devnet",
+};
+
+export const networks = [customDevnet] as [
+  typeof customDevnet,
 ]
 
 export const metadata = {

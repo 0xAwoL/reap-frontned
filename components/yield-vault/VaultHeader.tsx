@@ -4,7 +4,7 @@ export default function VaultHeader() {
       <div className="flex gap-[24px]">
         <div className="flex items-center">
           <span className="text-[#444] mr-[8px]">SYS</span> 
-          <b className="text-white font-[400]">YIELD_VAULT</b>
+          <b className="text-white font-[400]">REAP</b>
         </div>
         <div className="hidden sm:flex items-center">
           <span className="text-[#444] mr-[8px] animate-pulse">►</span> 
@@ -12,7 +12,7 @@ export default function VaultHeader() {
         </div>
       </div>
       <div className="flex items-center">
-        <appkit-button size="sm" />
+        <appkit-button balance="hide" size="sm" />
       </div>
     </div>
   )
