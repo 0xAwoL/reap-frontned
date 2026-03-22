@@ -153,21 +153,34 @@ export function usePortfolio(): UsePortfolioReturn {
             const account = await program.account.portfolio.fetchNullable(pda);
 
             if (!account) {
+                console.log("No portfolio account found");
                 setExists(false);
                 setPortfolio(null);
             } else {
+                console.log("Raw portfolio account data:", JSON.stringify(account, null, 2));
+                console.log("Account keys:", Object.keys(account));
+                
                 setExists(true);
+                
+                const amountRaw = account.amountUsdc?.toNumber?.() || 0;
+                const lastDepositAt = account.lastDepositAt?.toNumber?.() || 0;
+                
                 setPortfolio({
-                    owner: account.owner.toBase58(),
+                    owner: account.owner?.toBase58?.() || "",
                     strategy: anchorToStrategyId(account.strategy as object),
-                    amountRaw: account.amountLamports.toNumber(),
-                    amountUsdc: account.amountLamports.toNumber() / USDC_DECIMALS,
-                    lastDepositAt: new Date(account.lastDepositAt.toNumber() * 1000),
-                    depositCount: account.depositCount,
+                    amountRaw: amountRaw,
+                    amountUsdc: amountRaw / USDC_DECIMALS,
+                    lastDepositAt: new Date(lastDepositAt * 1000),
+                    depositCount: account.depositCount || 0,
                 });
+                
+                console.log("Portfolio state set successfully");
             }
         } catch (e: any) {
+            console.error("Failed to fetch portfolio:", e);
             setError(e.message ?? "Failed to fetch portfolio");
+            setExists(false);
+            setPortfolio(null);
         } finally {
             setLoading(false);
         }
@@ -230,9 +243,13 @@ export function usePortfolio(): UsePortfolioReturn {
             console.log("Attempting transaction anyway - the program will create it if needed or fail with a better error");
         }
 
+        console.log("Portfolio exists?", exists);
+        console.log("Current portfolio state:", portfolio);
+
         let tx: string;
 
         if (!exists) {
+            console.log("Using initializeAndDeposit (first deposit)");
             const accounts = {
                 owner: publicKey,
                 portfolio: pda,
@@ -253,6 +270,7 @@ export function usePortfolio(): UsePortfolioReturn {
                 .accounts(accounts)
                 .rpc({ commitment: "confirmed" });
         } else {
+            console.log("Using deposit (subsequent deposit)");
             const accounts = {
                 owner: publicKey,
                 portfolio: pda,

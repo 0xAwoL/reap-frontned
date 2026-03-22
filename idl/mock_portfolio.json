@@ -415,6 +415,10 @@
               "type": "pubkey"
             },
             {
+              "name": "mint",
+              "type": "pubkey"
+            },
+            {
               "name": "strategy",
               "type": {
                 "defined": {
