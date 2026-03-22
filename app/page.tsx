@@ -5,9 +5,10 @@ import VaultFooter from '@/components/yield-vault/VaultFooter'
 import Dashboard from '@/components/yield-vault/Dashboard'
 import Deposit from '@/components/yield-vault/Deposit'
 import Withdraw from '@/components/yield-vault/Withdraw'
+import { Points } from '@/components/yield-vault/Points'
 
 export default function AppClientPage() {
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'DEPOSIT' | 'WITHDRAW'>('DEPOSIT')
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'DEPOSIT' | 'WITHDRAW' | 'POINTS'>('DEPOSIT')
 
   return (
     <div className="bg-[#111] min-h-screen flex justify-center items-center text-[#b0b0b0] font-mono text-[11px] overflow-hidden m-0 p-4 select-none antialiased">
@@ -36,6 +37,12 @@ export default function AppClientPage() {
           >
             {activeTab === 'WITHDRAW' ? '> WITHDRAW' : 'WITHDRAW'}
           </button>
+          <button
+            onClick={() => setActiveTab('POINTS')}
+            className={`cursor-pointer transition-colors ${activeTab === 'POINTS' ? "text-white font-bold" : "text-[#444] hover:text-[#b0b0b0]"}`}
+          >
+            {activeTab === 'POINTS' ? '> POINTS' : 'POINTS'}
+          </button>
         </div>
 
         {/* CONTENT AREA: flex-grow with strict overflow so it never resizes parent */}
@@ -43,6 +50,7 @@ export default function AppClientPage() {
           {activeTab === 'DASHBOARD' && <Dashboard />}
           {activeTab === 'DEPOSIT' && <Deposit />}
           {activeTab === 'WITHDRAW' && <Withdraw />}
+          {activeTab === 'POINTS' && <Points />}
         </div>
 
         <VaultFooter />
