@@ -1,21 +1,15 @@
-# Next.js template
+# Reap — Frontend
 
-This is a Next.js template with shadcn/ui.
+## Smart contracts: [github.com/reap-fi/contracts](https://github.com/0xAwoL/niewiem-contracts)
 
-## Adding components
+Yield routing layer for real-world assets on Solana. Deposit USDC, choose a strategy, get exposure to gold, stocks and bonds — plus the best available yield.
+Stack
 
-To add components to your app, run the following command:
+Next.js + TypeScript
+Solana Reown Kit
+Tailwind CSS
 
-```bash
-npx shadcn@latest add button
-```
+Links: 
 
-This will place the ui components in the `components` directory.
-
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
-```
+Twitter: @reap_fi
+Email: contact.reap.fi@gmail.com
